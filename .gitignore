@@ -1,7 +1,5 @@
 # dependencies
-/node-server/node_modules
 /test-app/node_modules
-/node-server/.pnp
 /test-app/.pnp
 /node-server/.pnp.js
 /test-app/.pnp.js
@@ -25,4 +23,3 @@ yarn-debug.log*
 yarn-error.log*
 
 /.idea
-/node-server/.idea

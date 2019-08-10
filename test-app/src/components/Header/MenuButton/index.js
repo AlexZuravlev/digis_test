@@ -3,7 +3,7 @@ import './MenuButton.sass'
 import {Link} from 'react-router-dom';
 
 
-function MenuButton(props) {
+const MenuButton = (props) => {
     return (
         <Link to={props.link}>
             <div className="MenuButton">
@@ -11,8 +11,7 @@ function MenuButton(props) {
             </div>
         </Link>
 
-
     );
-}
+};
 
 export default MenuButton;
