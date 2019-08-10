@@ -1,18 +1,22 @@
-import  React from 'react';
+import React from 'react';
 import './Header.sass'
 import MenuButton from "./MenuButton";
 
-function Header(){
-    return (
-        <div>
-            <div className='Header'>
-                <MenuButton text='Main page' link='/'/>
-                <MenuButton text='Authorization' link='/authorization'/>
-                <MenuButton text='About author' link='about'/>
+class Header extends React.Component {
+    render() {
+        return (
+            <div>
+                <div className='Header'>
+                    <MenuButton text='Main page' link='/' id={0}/>
+                    <MenuButton text='Authorization' link='/authorization' id={1}/>
+                    <MenuButton text='About author' link='about' id={2}/>
+                </div>
             </div>
-        </div>
 
-    );
+        );
+    }
+
+
 }
 
 export default Header;

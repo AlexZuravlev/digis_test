@@ -23,36 +23,36 @@ class MapContainer extends React.Component {
             placesType: '',
             nearestPlaces: [],
             map: {}
-
         };
-
+        this.placesBtnHandleClick = this.placesBtnHandleClick.bind(this)
     };
 
-    placesBtnHandleClick = event => (mapProps, map) => {
-        map = this.state.map;
+
+    placesBtnHandleClick() {
+        let markers = [];
+
+        let map = this.state.map;
         const google = this.props.google;
         const service = new google.maps.places.PlacesService(map);
         let geo = this.state.geo;
         const request = {
             location: geo,
-            radius: '10000',
-            type: ['gas_station']
+            radius: '1000',
+            type: [this.props.currentType]
         };
 
         service.nearbySearch(request, (results, status) => {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
-
+                results.map((res, index) => {
+                    let lat = res.geometry.location.lat();
+                    let lng = res.geometry.location.lng();
+                    markers.push(<Marker id={index} visible={this.state.visibility} position={{lat: lat, lng: lng}}/>);
+                });
             }
-            results.map((res, index) => {
-                let lat = res.geometry.location.lat();
-                let lng = res.geometry.location.lng();
-                this.state.nearestPlaces.push(<Marker id={index} visible={this.state.visibility} position={{lat: lat, lng: lng}}/>)
-                this.setState({
-                    nearestPlaces: this.state.nearestPlaces
-                })
-            });
-        });
 
+        });
+        console.log(markers);
+        return markers
     };
 
     getMapProps = (mapProps, map) => {
@@ -138,7 +138,6 @@ class MapContainer extends React.Component {
 
     hideShowMarkers = () => {
         this.setState(prevState => {
-
             return {
                 visibility: !prevState.visibility,
                 markers: prevState.markers.map((marker) => {
@@ -159,33 +158,37 @@ class MapContainer extends React.Component {
         this.displaySavedMarkers();
     }
 
+    renderMap = () => {
+        return (
+            <Map
+                google={this.props.google}
+                zoom={13}
+                style={mapStyles}
+                onClick={this.mapClicked}
+                onReady={this.getMapProps}
+                disableDefaultUI={true}
+                zoomControl={true}
+                scaleControl={true}
+                id='google_map'
+                centerAroundCurrentLocation={true}
+            >
+                <Marker position={this.state.geo}/>
+                {this.state.markers}
+                {this.placesBtnHandleClick()}
+            </Map>
+        )
+    };
 
     render() {
-
+        // this.placesBtnHandleClick(this.props.currentType);
         return (
 
             <div>
-                <Map
-                    google={this.props.google}
-                    zoom={13}
-                    style={mapStyles}
-                    onClick={this.mapClicked}
-                    onReady={this.getMapProps}
-                    disableDefaultUI={true}
-                    zoomControl={true}
-                    scaleControl={true}
-                    id='google_map'
-                    centerAroundCurrentLocation={true}
-                >
-
-                    <Marker position={this.state.geo}/>
-                    {this.state.markers}
-                    {this.state.nearestPlaces}
-                </Map>
+                {this.renderMap()}
                 <div className="maps__btn-cont">
                     <MapBtn text={this.state.btnText} click={this.hideShowMarkers}/>
                     <MapBtn val='save' text='save' click={this.saveMarkers}/>
-                    <div style={{background: 'red', width: '50px', height: '50px' }} onClick={this.placesBtnHandleClick()}/>
+                    <div style={{background: 'red', width: '50px', height: '50px'}}/>
 
                 </div>
             </div>
