@@ -1,7 +1,7 @@
 import React from 'react';
 import {Map, GoogleApiWrapper, Marker, InfoWindow } from 'google-maps-react';
 import './GoogleMap.sass'
-import MapBtn from "../MapBtn"
+import MapBtn from "../../components/MainPage/MapBtn"
 import {connect} from "react-redux";
 
 const mapStyles = {

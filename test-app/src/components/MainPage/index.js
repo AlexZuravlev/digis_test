@@ -1,23 +1,12 @@
 import React from 'react';
-import MapContainer from "./GoogleMap";
+import MapContainer from "../../containers/GoogleMap";
 import PlacesBtn from './PlacesBtn';
-import './GoogleMap/GoogleMap.sass';
+import '../../containers/GoogleMap/GoogleMap.sass';
 import './PlacesBtn/PlacesBtn.sass'
+import { connect } from 'react-redux';
+import { setCurrentPlaceType } from '../../store/FetchPlaces/actions';
 
 class MainPage extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            currentType: ''
-        }
-    }
-
-    updateData = (value) => {
-        this.setState({
-            currentType: value
-        });
-    };
 
 
 
@@ -25,19 +14,20 @@ class MainPage extends React.Component {
         return (
             <section>
                 <div className="places__button-cont">
-                    <PlacesBtn text='gas_station' updateData={this.updateData}/>
-                    <PlacesBtn text='bank' updateData={this.updateData}/>
-                    <PlacesBtn text='Gas Station' updateData={this.updateData}/>
-                    <PlacesBtn text='Airports' updateData={this.updateData}/>
-                    <PlacesBtn text='Banks' updateData={this.updateData}/>
+                    <PlacesBtn text='Gas Stations' place='gas_station' click={()=> this.props.setCurrentPlaceType('gas_station')}/>
+                    <PlacesBtn text='Banks' place='bank' click={()=> this.props.setCurrentPlaceType('bank')}/>
+                    <PlacesBtn text='Airports' place='airport' click={()=> this.props.setCurrentPlaceType('airport')}/>
+                    <PlacesBtn text='Bars' place='bar' click={()=> this.props.setCurrentPlaceType('bar')}/>
+                    <PlacesBtn text='Cafes' place='cafe' click={()=> this.props.setCurrentPlaceType('cafe')}/>
                 </div>
                 <div className="google-map">
-                    <MapContainer currentType={this.state.currentType}/>
+                    <MapContainer/>
                 </div>
             </section>
         )
     }
 
 }
-
-export default MainPage
+export default connect(null, {
+    setCurrentPlaceType
+})(MainPage)
