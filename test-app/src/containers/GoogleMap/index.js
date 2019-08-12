@@ -1,7 +1,8 @@
 import React from 'react';
-import {Map, GoogleApiWrapper, Marker,} from 'google-maps-react';
+import {Map, GoogleApiWrapper, Marker, InfoWindow } from 'google-maps-react';
 import './GoogleMap.sass'
 import MapBtn from "../MapBtn"
+import {connect} from "react-redux";
 
 const mapStyles = {
     width: '100%',
@@ -16,43 +17,52 @@ class MapContainer extends React.Component {
         super(props);
         this.state = {
             markers: [],
-            geo: {lat: 0, lng: 0},
+            geo: {},
             keyIndex: 0,
             visibility: true,
             btnText: 'hide',
             placesType: '',
             nearestPlaces: [],
-            map: {}
+            map: {},
+            showingInfoWindow: false,
+            activeMarker: {},
+            selectedPlace: {},
         };
-        this.placesBtnHandleClick = this.placesBtnHandleClick.bind(this)
     };
 
+    componentWillReceiveProps(nextProps, nextContext) {
+        if (this.props.renderNearest !== nextProps.renderNearest) {
+            this.placesBtnHandleClick(nextProps.renderNearest);
 
-    placesBtnHandleClick() {
-        let markers = [];
+        }
+    }
 
+    placesBtnHandleClick = (currentType) => {
         let map = this.state.map;
         const google = this.props.google;
         const service = new google.maps.places.PlacesService(map);
         let geo = this.state.geo;
+        const nearestPlaces = [];
         const request = {
             location: geo,
-            radius: '1000',
-            type: [this.props.currentType]
+            radius: '500',
+            type: [currentType],
+            fields: ['name']
         };
 
-        service.nearbySearch(request, (results, status) => {
-            if (status === google.maps.places.PlacesServiceStatus.OK) {
-                results.map((res, index) => {
-                    let lat = res.geometry.location.lat();
-                    let lng = res.geometry.location.lng();
-                    markers.push(<Marker id={index} visible={this.state.visibility} position={{lat: lat, lng: lng}}/>);
+        service.nearbySearch(request, (results) => {
+                results.map((results, index) => {
+                    let lat = results.geometry.location.lat();
+                    let lng = results.geometry.location.lng();
+                    return nearestPlaces.push(<Marker key={index} position={{lat: lat, lng: lng}}/>);
                 });
-            }
+            this.setState({
+                nearestPlaces
+            })
 
         });
-        console.log(markers);
-        return markers
+
+
     };
 
     getMapProps = (mapProps, map) => {
@@ -63,20 +73,27 @@ class MapContainer extends React.Component {
     };
 
     addMarker = (lat, lng, markersArr) => {
-        markersArr.push(<Marker visible={this.state.visibility} position={{lat: lat, lng: lng}}/>);
+
+        markersArr.push(<Marker key={Math.random().toFixed(3)} visible={this.state.visibility} position={{lat: lat, lng: lng}}/>);
     };
 
 
     mapClicked = (mapProps, map, clickEvent) => {
         let lat = clickEvent.latLng.lat();
         let lng = clickEvent.latLng.lng();
-        let markersArr = this.state.markers;
+        let markersArr = [];
         if (this.state.visibility) {
             this.addMarker(lat, lng, markersArr);
         }
-        this.setState({
-            markers: markersArr,
-        });
+        this.setState(prevState => ({
+            markers: [...prevState.markers, ...markersArr],
+        }));
+        if (this.state.showingInfoWindow) {
+            this.setState({
+                showingInfoWindow: false,
+                activeMarker: null
+            })
+        }
     };
 
 
@@ -119,7 +136,6 @@ class MapContainer extends React.Component {
 
     saveMarkers = () => {
         const markers = JSON.stringify(this.state.markers);
-        console.log(markers);
         localStorage.setItem('savedMarkers', markers)
 
     };
@@ -127,23 +143,28 @@ class MapContainer extends React.Component {
     displaySavedMarkers = () => {
         if (localStorage.getItem('savedMarkers')) {
             let savedMarkers = JSON.parse(localStorage.getItem('savedMarkers'));
-            return savedMarkers.map((marker) => {
+            let savedMarkersArr = [];
+            savedMarkers.map((marker, index) => {
                 let lat = marker.props.position.lat;
                 let lng = marker.props.position.lng;
-                return this.state.markers.push(<Marker visible={this.state.visibility}
+                return savedMarkersArr.push(<Marker key={index} visible={this.state.visibility}
                                                        position={{lat: lat, lng: lng}}/>)
+            });
+            this.setState({
+                markers: savedMarkersArr
             })
         }
+
     };
 
     hideShowMarkers = () => {
         this.setState(prevState => {
             return {
                 visibility: !prevState.visibility,
-                markers: prevState.markers.map((marker) => {
+                markers: prevState.markers.map((marker, index) => {
                     let lat = marker.props.position.lat;
                     let lng = marker.props.position.lng;
-                    return <Marker visible={!this.state.visibility} position={{lat: lat, lng: lng}}/>
+                    return <Marker key={index} visible={!this.state.visibility} position={{lat: lat, lng: lng}}/>
                 }),
                 btnText: prevState.visibility ? prevState.visibility = 'show' : prevState.visibility = 'hide'
             };
@@ -158,38 +179,54 @@ class MapContainer extends React.Component {
         this.displaySavedMarkers();
     }
 
-    renderMap = () => {
-        return (
-            <Map
-                google={this.props.google}
-                zoom={13}
-                style={mapStyles}
-                onClick={this.mapClicked}
-                onReady={this.getMapProps}
-                disableDefaultUI={true}
-                zoomControl={true}
-                scaleControl={true}
-                id='google_map'
-                centerAroundCurrentLocation={true}
-            >
-                <Marker position={this.state.geo}/>
-                {this.state.markers}
-                {this.placesBtnHandleClick()}
-            </Map>
-        )
+    onMarkerClick = (props, marker, e) =>{
+        this.setState({
+            selectedPlace: props,
+            activeMarker: marker,
+            showingInfoWindow: true
+        });
+        console.log('map clicked')
     };
 
+
+
+
+
     render() {
-        // this.placesBtnHandleClick(this.props.currentType);
         return (
 
             <div>
-                {this.renderMap()}
+                <Map
+                    google={this.props.google}
+                    zoom={13}
+                    style={mapStyles}
+                    onClick={this.mapClicked}
+                    onReady={this.getMapProps}
+                    disableDefaultUI={true}
+                    zoomControl={true}
+                    scaleControl={true}
+                    id='google_map'
+                    centerAroundCurrentLocation={true}
+                >
+                    <Marker
+                        position={this.state.geo}
+                        className='marker__geoposition'
+                        name={'Your Geolocation'}
+                        onClick={this.onMarkerClick}
+                    />
+                    <InfoWindow
+                        marker={this.state.activeMarker}
+                        visible={this.state.showingInfoWindow}>
+                        <div>
+                            <h1>{this.state.selectedPlace.name}</h1>
+                        </div>
+                    </InfoWindow>
+                    {this.state.markers}
+                    {this.state.nearestPlaces}
+                </Map>
                 <div className="maps__btn-cont">
                     <MapBtn text={this.state.btnText} click={this.hideShowMarkers}/>
                     <MapBtn val='save' text='save' click={this.saveMarkers}/>
-                    <div style={{background: 'red', width: '50px', height: '50px'}}/>
-
                 </div>
             </div>
 
@@ -200,8 +237,11 @@ class MapContainer extends React.Component {
 }
 
 
-export default GoogleApiWrapper({
+const apiWraper =  GoogleApiWrapper({
     apiKey: _GAPI_KEY,
     libraries: ['places']
 })(MapContainer);
 
+export default connect((store)=> ({
+    renderNearest: store.fetchPlaces.currentType
+}))(apiWraper)
