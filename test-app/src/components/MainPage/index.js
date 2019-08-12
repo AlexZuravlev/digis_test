@@ -8,8 +8,6 @@ import { setCurrentPlaceType } from '../../store/FetchPlaces/actions';
 
 class MainPage extends React.Component {
 
-
-
     render() {
         return (
             <section>
@@ -26,8 +24,8 @@ class MainPage extends React.Component {
             </section>
         )
     }
-
 }
+
 export default connect(null, {
     setCurrentPlaceType
 })(MainPage)

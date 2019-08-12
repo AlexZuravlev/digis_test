@@ -4,14 +4,12 @@ import './About.sass'
 import Name from "./Name";
 import AboutText from "./AboutText";
 
-
-const AboutPage = () =>(
+const AboutPage = () => (
     <section className="about">
         <AuthorIcon/>
         <Name/>
         <AboutText/>
     </section>
-
 );
 
 export default AboutPage

@@ -1,6 +1,5 @@
 import React from 'react';
 
-
 class HideBtn extends React.Component {
 
     render() {
@@ -9,11 +8,7 @@ class HideBtn extends React.Component {
                 <span>{this.props.text}</span>
             </div>
         )
-
-        }
-
-
+    };
 }
-
 
 export default HideBtn;

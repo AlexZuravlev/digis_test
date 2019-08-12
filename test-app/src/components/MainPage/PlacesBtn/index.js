@@ -9,7 +9,6 @@ class PlacesBtn extends React.Component{
             </div>
         )
     }
-
 }
 
 export default PlacesBtn;

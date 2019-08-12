@@ -7,7 +7,7 @@ class MenuButton extends React.Component {
     render() {
         return (
             <Link to={this.props.link} onClick={this.handleClick}>
-                <div  className='MenuButton'>
+                <div className='MenuButton'>
                     <span>{this.props.text}</span>
                 </div>
             </Link>
